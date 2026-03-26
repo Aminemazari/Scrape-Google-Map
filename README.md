@@ -1,53 +1,357 @@
-# Google Maps Business Listings Scraper
+# 🗺️ Google Maps Business Listings Scraper
 
-A **stable, low-volume, human-like** Playwright script for collecting publicly visible business listings from Google Maps for personal research use.
+A **stable, human-like, low-volume** web scraper for collecting publicly visible business listings from Google Maps. Built with **Playwright** for personal research and automated business data collection.
 
-## Features
+> ⚡ **Key Features**: REST API, CLI tool, authentication, phone number extraction, intelligent scrolling, duplicate prevention
 
-✅ **Human-like behavior**
-- Headful mode (visible browser window)
-- Randomized delays between actions (2-5 seconds)
-- Gradual, natural scrolling
-- Random user-agent and viewport
+---
 
-✅ **Stability & Safety**
-- Fresh browser context per run
-- Resilient selectors with fallbacks
-- CAPTCHA detection with automatic abort
-- Timeout protections
-- Graceful error handling
+## 📋 Table of Contents
 
-✅ **Rate Limiting**
-- Maximum 50-100 results per run (configurable)
-- Maximum 15 scroll actions (configurable)
-- Maximum runtime of 10 minutes (configurable)
-- No aggressive automation or repeated requests
+- [Features](#features)
+- [Quick Start](#quick-start)
+- [API Server](#api-server)
+- [Configuration](#configuration)
+- [Output](#output)
+- [How It Works](#how-it-works)
+- [License](#license)
 
-✅ **Data Quality**
-- Duplicate detection and removal
-- Clean JSON and CSV output
-- Timestamped results
-- Visible data only (no hidden/private data)
+---
 
-✅ **Code Quality**
-- Modular, well-organized structure
-- Clear comments and logging
-- Easy parameter configuration
-- No external scraping frameworks
+## ✨ Features
 
-## Project Structure
+### 🎯 Core Capabilities
+- ✅ Extract business name, rating, address, phone, website
+- ✅ REST API with authentication
+- ✅ CLI tool for manual scraping
+- ✅ Intelligent scrolling detection (200-400px increments)
+- ✅ Automatic duplicate prevention
+- ✅ End-of-results detection
+- ✅ JSON & CSV export formats
+
+### 🚀 Performance
+- ✅ Human-like behavior (randomized delays: 800-1500ms)
+- ✅ Headful mode (visible browser)
+- ✅ Fresh context per request
+- ✅ Graceful error handling
+- ✅ CAPTCHA detection & abort
+
+### 🔒 Safety & Ethics
+- ✅ Low-volume (50-100 results max)
+- ✅ Rate-limited scrolls
+- ✅ 10-minute max runtime
+- ✅ Respects Google Maps ToS
+- ✅ No aggressive automation
+
+---
+
+## 🚀 Quick Start
+
+### 1. Prerequisites
+- **Node.js** v18+
+- **npm** or yarn
+
+### 2. Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/Aminemazari/Scrape-Google-Map.git
+cd scrape
+
+# Install dependencies
+npm install
+```
+
+### 3. Set Up Environment
+
+```bash
+# Copy example config
+cp .env.example .env
+
+# Edit .env with your API key
+# PORT=3000
+# API_KEY=your-secure-key-here
+```
+
+### 4. Start the Server
+
+```bash
+npm start
+```
+
+Server runs on `http://localhost:3000`
+
+---
+
+## 🌐 API Server
+
+### Health Check
+```bash
+curl http://localhost:3000/health
+```
+
+**Response:**
+```json
+{
+  "status": "healthy",
+  "uptime": 245.123,
+  "timestamp": "2026-03-26T12:00:00.000Z"
+}
+```
+
+### Scrape Endpoint (POST /scrape)
+
+```bash
+curl -X POST http://localhost:3000/scrape \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: your-secret-api-key-change-me" \
+  -d '{"query": "restaurants in New York"}'
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "query": "restaurants in New York",
+  "totalListings": 42,
+  "data": [
+    {
+      "name": "Best Pizza Place",
+      "rating": "4.5 stars",
+      "address": "123 Main St, New York",
+      "phone": "+1 555-0123",
+      "website": "https://example.com",
+      "category": null,
+      "url": "https://google.com/maps/place/...",
+      "extractedAt": "2026-03-26T12:00:00.000Z"
+    }
+    // ... more listings
+  ],
+  "timestamp": "2026-03-26T12:00:00.000Z"
+}
+```
+
+### API Documentation
+```bash
+curl http://localhost:3000/docs
+```
+
+---
+
+## 💻 CLI Tool
+
+### Basic Search
+
+```bash
+npm run cli "coffee shops in Barcelona"
+```
+
+### Output Files
+Results automatically save to `./results/`:
+```
+results/
+├── 2026-03-26T120000Z_google_maps_listings.json
+└── 2026-03-26T120000Z_google_maps_listings.csv
+```
+
+---
+
+## ⚙️ Configuration
+
+Edit `src/config.js` to customize:
+
+```javascript
+// Timing (milliseconds)
+timing: {
+  actionDelayMin: 2000,    // Min delay between actions
+  actionDelayMax: 5000,    // Max delay between actions
+  scrollDelayMin: 800,     // Min delay between scrolls
+  scrollDelayMax: 1500,    // Max delay between scrolls
+}
+
+// Collection limits
+limits: {
+  maxResults: 100,         // Stop after N listings
+  maxScrolls: 20,          // Stop after N scroll actions
+  maxRuntimeMinutes: 10,   // Stop after N minutes
+}
+
+// Browser
+browser: {
+  headless: false,         // false = visible, true = headless
+  slowMo: 100,             // Animation slowdown (ms)
+}
+```
+
+---
+
+## 📊 Output
+
+### JSON Format
+```json
+{
+  "name": "Restaurant Name",
+  "rating": "4.5 stars",
+  "address": "123 Main Street",
+  "phone": "+1 555-0123",
+  "website": "https://example.com",
+  "category": "Restaurant",
+  "url": "https://google.com/maps/place/...",
+  "extractedAt": "2026-03-26T12:00:00.000Z"
+}
+```
+
+### CSV Format
+```csv
+name,rating,address,phone,website,category,extractedAt
+Restaurant Name,4.5 stars,123 Main Street,+1 555-0123,https://example.com,Restaurant,2026-03-26T12:00:00.000Z
+```
+
+---
+
+## 🔧 How It Works
+
+### 1. **Initialize**
+   - Launch Chromium browser
+   - Set user-agent & viewport
+
+### 2. **Search**
+   - Navigate to Google Maps
+   - Enter search query
+   - Submit search
+
+### 3. **Extract Initial Results**
+   - Parse visible listings
+   - Extract name, rating, address
+   - Track processed cards
+
+### 4. **Intelligent Scrolling**
+   - Scroll container 200-400px
+   - Wait 800-1500ms for lazy-load
+   - Detect new cards
+   - Repeat until end-of-list found
+
+### 5. **Detail Extraction**
+   - Click each listing
+   - Extract phone & website
+   - Click detail card
+   - Return to results
+
+### 6. **Export**
+   - Remove duplicates
+   - Save JSON & CSV
+   - Print statistics
+
+### 7. **Cleanup**
+   - Close browser
+   - Release resources
+
+---
+
+## 📁 Project Structure
 
 ```
 scrape/
-├── package.json                 # Dependencies and scripts
+├── package.json              # Dependencies & npm scripts
+├── .env.example              # Environment config template
+├── LICENSE                   # MIT License
+├── README.md                 # This file
 ├── src/
-│   ├── index.js                # Main entry point with CLI
-│   ├── config.js               # Configuration and constants
-│   ├── scraper.js              # Core Playwright scraper
-│   ├── exporter.js             # JSON and CSV export
-│   ├── utils.js                # Utility functions and logger
-│   └── .gitignore              # Ignore node_modules, results
-└── results/                     # Output directory (auto-created)
+│   ├── server.js            # Express REST API
+│   ├── scraper.js           # Core Playwright scraper
+│   ├── index.js             # CLI entry point
+│   ├── config.js            # Configuration constants
+│   ├── exporter.js          # JSON/CSV export
+│   └── utils.js             # Helpers & logger
+└── results/                 # Output directory (auto-created)
+```
+
+---
+
+## 📦 Dependencies
+
+- **Playwright** - Browser automation
+- **Express.js** - REST API framework
+- **Node.js Core** - fs, path modules
+
+No external scraping libraries. Pure Playwright + Express.
+
+---
+
+## 🔐 API Authentication
+
+The server requires API key authentication via `x-api-key` header:
+
+```bash
+# Generate a secure key
+openssl rand -hex 32
+
+# Use in requests
+curl -X POST http://localhost:3000/scrape \
+  -H "x-api-key: YOUR_GENERATED_KEY" \
+  -d '{"query": "search term"}'
+```
+
+Environment variable:
+```env
+API_KEY=your-secret-key-change-this
+```
+
+---
+
+## ⚠️ Important Notes
+
+### Compliance
+- ✅ For personal research only
+- ✅ Collects public data visible on Google Maps
+- ✅ Respects Terms of Service
+- ❌ Not for commercial bulk scraping
+- ❌ Not for competitive intelligence
+- ❌ Not for resale or redistribution
+
+### Rate Limiting
+- Max 100 results per run
+- Max 20 scroll actions
+- 10-minute timeout
+- 800-1500ms delays between actions
+
+### Error Handling
+If CAPTCHA is detected, the scraper automatically stops. This is intentional to respect Google's security.
+
+---
+
+## 📄 License
+
+**Copyright © 2026 Lacos**
+
+Licensed under the **MIT License** - see [LICENSE](./LICENSE) file.
+
+**Disclaimer**: Users are responsible for complying with Google Maps Terms of Service and local laws regarding web scraping. The authors assume no liability for misuse.
+
+---
+
+## 🤝 Contributing
+
+Found a bug? Want to improve something?
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a Pull Request
+
+---
+
+## 📞 Support
+
+For issues or questions:
+1. Check [EXAMPLES.md](./EXAMPLES.md) for usage examples
+2. Review [DEVELOPER.md](./DEVELOPER.md) for technical details
+3. Check [QUICK_REFERENCE.md](./QUICK_REFERENCE.md) for quick tips
+
+---
+
+**Built with ❤️ by Lacos | Powered by Playwright**
     ├── 2024-12-15-1430_google_maps_listings.json
     └── 2024-12-15-1430_google_maps_listings.csv
 ```
@@ -398,6 +702,8 @@ For issues or improvements:
 ---
 
 **Remember**: This tool is for personal research and occasional use only. Respect Google Maps' Terms of Service and gather data responsibly. 🚀
-#   S c r a p e - G o o g l e - M a p  
- #   S c r a p e - G o o g l e - M a p  
+#   S c r a p e - G o o g l e - M a p 
+ 
+ #   S c r a p e - G o o g l e - M a p 
+ 
  
