@@ -19,11 +19,11 @@ A **stable, human-like, low-volume** web scraper for collecting publicly visible
 - License
 
 ---
-## 🎥 Demo Video
+# 🗺️ Google Maps Business Listings Scraper
+
+## 🎥 Live Demo
 
 [![Watch Demo](https://img.youtube.com/vi/9DB4_ekxsMU/0.jpg)](https://www.youtube.com/watch?v=9DB4_ekxsMU)
-
-👉 Click the image above to watch the full demo of the Google Maps scraper in action.
 
 ## ✨ Features
 
