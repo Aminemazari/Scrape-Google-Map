@@ -9,6 +9,7 @@
 
 import express from 'express';
 import { GoogleMapsScraper } from './scraper.js';
+import { scrapeContactPage } from './contact-scraper.js';
 import { Logger } from './utils.js';
 
 const logger = new Logger();
@@ -108,6 +109,56 @@ app.post('/scrape', validateApiKey, async (req, res) => {
 });
 
 /**
+ * POST /scrape-contact - Scrape contact page for emails
+ * Body: { url: "website url" }
+ * Headers: x-api-key: your-api-key
+ */
+app.post('/scrape-contact', validateApiKey, async (req, res) => {
+  try {
+    const { url } = req.body;
+
+    // Validate URL
+    if (!url || typeof url !== 'string' || url.trim().length === 0) {
+      return res.status(400).json({
+        error: 'Invalid URL',
+        message: 'Please provide a valid website URL in the request body'
+      });
+    }
+
+    logger.section(`API REQUEST: Scraping contact page for "${url}"`);
+
+    try {
+      // Scrape contact page
+      const emails = await scrapeContactPage(url);
+
+      // Return results
+      return res.status(200).json({
+        success: true,
+        url: url,
+        contactPageUrl: url.replace(/\/$/, '') + '/contact',
+        emailsFound: emails.length,
+        emails: emails,
+        timestamp: new Date().toISOString()
+      });
+    } catch (scrapeError) {
+      logger.error(`Contact scraping error: ${scrapeError.message}`);
+
+      return res.status(500).json({
+        error: 'Contact scraping failed',
+        message: scrapeError.message,
+        url: url
+      });
+    }
+  } catch (error) {
+    logger.error(`API error: ${error.message}`);
+    return res.status(500).json({
+      error: 'Server error',
+      message: error.message
+    });
+  }
+});
+
+/**
  * GET /health - Health check
  */
 app.get('/health', (req, res) => {
@@ -154,6 +205,34 @@ app.get('/docs', (req, res) => {
         }
       },
       {
+        method: 'POST',
+        path: '/scrape-contact',
+        description: 'Scrape contact page and extract email addresses',
+        authentication: 'x-api-key header (required)',
+        requestBody: {
+          url: 'string (website URL, required)'
+        },
+        example: {
+          method: 'POST',
+          url: 'http://localhost:3000/scrape-contact',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': 'your-api-key'
+          },
+          body: {
+            url: 'https://example.com'
+          }
+        },
+        response: {
+          success: 'boolean',
+          url: 'string (original url)',
+          contactPageUrl: 'string (contact page url)',
+          emailsFound: 'number',
+          emails: 'array of email strings',
+          timestamp: 'ISO timestamp'
+        }
+      },
+      {
         method: 'GET',
         path: '/health',
         description: 'Health check endpoint',
@@ -185,7 +264,7 @@ app.use((req, res) => {
   res.status(404).json({
     error: 'Not found',
     message: `Endpoint ${req.method} ${req.path} does not exist`,
-    availableEndpoints: ['/scrape (POST)', '/health (GET)', '/docs (GET)']
+    availableEndpoints: ['/scrape (POST)', '/scrape-contact (POST)', '/health (GET)', '/docs (GET)']
   });
 });
 
